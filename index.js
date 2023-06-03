@@ -35,13 +35,60 @@ app.get("/shops/:title/products", async (req, res) => {
 
 app.post("/order", async (req, res) => {
   try {
-    await OrderModel.create({
-      ...req.body,
-    });
+    if (req.body.credentials && req.body.cart) {
+      await OrderModel.create(req.body);
+    } else {
+      throw new Error(
+        "Order should only contain credentials and cart properties"
+      );
+    }
   } catch (err) {
-    return res.status(402).send("Error creating order: ", err);
+    return res.status(400).send(`Error creating order: ${err.message}`);
   }
   res.send("Created new order");
+});
+
+app.post("/history", async (req, res, next) => {
+  try {
+    const order = await OrderModel.find({
+      $or: [
+        { "credentials.0.email": req.body.email },
+        { "credentials.0.phone": req.body.phone },
+      ],
+    });
+
+    if (order.length === 0) {
+      throw new Error("Order doesn't exist");
+    }
+
+    const orderList = order.map((order) => order.cart[0]);
+
+    res.json(orderList);
+  } catch (err) {
+    return res.status(400).send(`Error getting history: ${err.message}`);
+  }
+});
+
+const COUPONS = [
+  { code: "MINUS_15", description: "Get 15$ discount", discount: 15 },
+  { code: "MINUS_10", description: "Get 10$ discount", discount: 10 },
+  { code: "MINUS_20", description: "Get 20$ discount", discount: 20 },
+];
+
+app.get("/coupons", async (req, res) => {
+  res.json(COUPONS);
+});
+
+app.get("/coupons/:couponCode", async (req, res) => {
+  const exsiting = COUPONS.find(
+    (coupon) => coupon.code === req.params.couponCode
+  );
+
+  if (exsiting) {
+    res.json({ discount: exsiting.discount });
+  } else {
+    res.status(400).send("Invalid coupon");
+  }
 });
 
 app.listen(5000, (err) => {
