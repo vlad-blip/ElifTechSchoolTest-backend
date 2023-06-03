@@ -21,6 +21,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", async (req, res) => {
+  res.send("Server is up and running successfully");
+});
+
 app.get("/shops", async (req, res) => {
   const shops = await ShopModel.find();
 
