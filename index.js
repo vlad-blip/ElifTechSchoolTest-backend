@@ -91,7 +91,7 @@ app.get("/coupons/:couponCode", async (req, res) => {
   }
 });
 
-app.listen(5000, (err) => {
+app.listen(process.env.PORT || 5000, (err) => {
   if (err) {
     return console.log(err);
   }
