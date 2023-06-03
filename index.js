@@ -96,5 +96,5 @@ app.listen(process.env.PORT || 5000, (err) => {
     return console.log(err);
   }
 
-  console.log("server has started on port 5000");
+  console.log("server has started");
 });
